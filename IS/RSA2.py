@@ -1,73 +1,86 @@
-################################
-#Some Error Persists 
-################################
-"""
-try:
-   input = raw_input
-except NameError:
-   pass
-try:
-   chr = unichr
-except NameError:
-   pass
-"""
-p=int(input('Enter prime p: '))
-q=int(input('Enter prime q: '))
-print("Choosen primes:\np=" + str(p) + ", q=" + str(q) + "\n")
-n=p*q
-print("n = p * q = " + str(n) + "\n")
-phi=(p-1)*(q-1)
-print("Euler's function (totient) [phi(n)]: " + str(phi) + "\n")
-def gcd(a, b):
-    while b != 0:
-        c = a % b
-        a = b
-        b = c
-    return a
-def modinv(a, m):
-    for x in range(1, m):
-        if (a * x) % m == 1:
-            return x
-    return None
+from random import choice
 
-def coprimes(a):
-    l = []
-    for x in range(2, a):
-        if gcd(a, x) == 1 and modinv(x,phi) != None:
+from math import gcd
+from sympy import mod_inverse as modinv
+
+
+def encrypt_string(key, plaintext):
+    d, n = key
+    cipher = [(ord(char) ** d) % n for char in plaintext]
+    return ''.join(map(lambda i: chr(i), cipher))
+
+
+def decrypt_string(key, ciphertext):
+    e, n = key
+    plain = [chr((char ** e) % n) for char in map(lambda i: ord(i), ciphertext)]
+    return ''.join(plain)
+
+
+def generate_keypair(p, q):
+    n = p * q
+
+    phi = (p - 1) * (q - 1)
+
+    l = list()
+    for x in range(2, phi):
+        if gcd(phi, x) == 1 and x != modinv(x, phi):
             l.append(x)
-    for x in l:
-        if x == modinv(x,phi):
-            l.remove(x)
-    return l
-print("Choose an e from a below coprimes array:\n")
-print(str(coprimes(phi)) + "\n")
-e=int(input())
+    e = choice(l)
 
-d=modinv(e,phi)
-print("\nYour public key is a pair of numbers (e=" + str(e) + ", n=" + str(n) + ").\n")
-print("Your private key is a pair of numbers (d=" + str(d) + ", n=" + str(n) + ").\n")
-def encrypt_block(m):
-    c = modinv(m**e, n)
-    if c == None: 
-        print('No modular multiplicative inverse for block ' + str(m) + '.')
-    return c
-def decrypt_block(c):
-    m = modinv(c**d, n)
-    if m == None: 
-        print('No modular multiplicative inverse for block ' + str(c) + '.')
-    return m
-def encrypt_string(s):
-    return ''.join(str(chr(encrypt_block(ord(x)))) for x in s)
+    d = modinv(e, phi)
+    return (e, n), (d, n)
 
-def decrypt_string(s):
-    print("hahah")
-    return ''.join(str(chr(decrypt_block(ord(x)))) for x in s)
 
+primes = [int(input('Enter prime p: ')), int(input('Enter prime q: '))]
+pub_key, priv_key = generate_keypair(*primes)
+print("public key =", pub_key, "\nprivate key =", priv_key, end='\n\n')
 
 s = input("Enter a message to encrypt: ")
-print("\nPlain message: " + s + "\n")
-enc = encrypt_string(s)
-print("Encrypted message: " + enc + "\n")
-print(type(enc))
-dec = decrypt_string(enc)
-print("Decrypted message: " +  dec + "\n")
+print("Plain message: " + s)
+enc = encrypt_string(priv_key, s)
+print("Encrypted message: ", enc)
+dec = decrypt_string(pub_key, enc)
+print("Decrypted message: " + dec)
+from random import choice
+
+from math import gcd
+from sympy import mod_inverse as modinv
+
+
+def encrypt_string(key, plaintext):
+    d, n = key
+    cipher = [(ord(char) ** d) % n for char in plaintext]
+    return ''.join(map(lambda i: chr(i), cipher))
+
+
+def decrypt_string(key, ciphertext):
+    e, n = key
+    plain = [chr((char ** e) % n) for char in map(lambda i: ord(i), ciphertext)]
+    return ''.join(plain)
+
+
+def generate_keypair(p, q):
+    n = p * q
+
+    phi = (p - 1) * (q - 1)
+
+    l = list()
+    for x in range(2, phi):
+        if gcd(phi, x) == 1 and x != modinv(x, phi):
+            l.append(x)
+    e = choice(l)
+
+    d = modinv(e, phi)
+    return (e, n), (d, n)
+
+
+primes = [int(input('Enter prime p: ')), int(input('Enter prime q: '))]
+pub_key, priv_key = generate_keypair(*primes)
+print("public key =", pub_key, "\nprivate key =", priv_key, end='\n\n')
+
+s = input("Enter a message to encrypt: ")
+print("Plain message: " + s)
+enc = encrypt_string(priv_key, s)
+print("Encrypted message: ", enc)
+dec = decrypt_string(pub_key, enc)
+print("Decrypted message: " + dec)
